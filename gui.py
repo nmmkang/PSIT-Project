@@ -1,5 +1,6 @@
 """print ตั๋ว"""
 
+import spreadsheet #file ดึงข้อมูลมาจาก excel อย่าเพิ่ง import ยังเขียนไม่เสร็จ
 from pathlib import Path
 from tkinter import *
 # Explicit imports to satisfy Flake8
@@ -71,11 +72,11 @@ def booking():
 
     #คำนำหน้าชื่อ
     radio_name_start = StringVar()
-    mr = Radiobutton(window, text='Mr.', variable=radio_name_start, value="MR.")
+    mr = Radiobutton(window, text='Mr.', variable=radio_name_start, value="Mr.")
     mr.place(x=175.0, y=188)
-    ms = Radiobutton(window, text='Ms.', variable=radio_name_start, value="MS.")
+    ms = Radiobutton(window, text='Ms.', variable=radio_name_start, value="Ms.")
     ms.place(x=235.0, y=188)
-    miss = Radiobutton(window, text='Miss.', variable=radio_name_start, value="MISS.")
+    miss = Radiobutton(window, text='Miss.', variable=radio_name_start, value="Miss")
     miss.place(x=298.0, y=188)
 
     #Age
@@ -158,8 +159,22 @@ def booking():
     #text fight booking
     canvas.create_text(108.0, 126.0, anchor="nw", text="Flight Booking", fill="#FFFFFF", font=("Manrope Regular", 16 * -1))
 
-
     #function ยอ่ย
+    def clearinput():
+        entry_1.delete(0, 'end')
+        entry_2.delete(0, 'end')
+        entry_3.delete(0, 'end')
+        entry_4.delete(0, 'end')
+        entry_5.delete(0, 'end')
+        entry_6.delete(0, 'end')
+        time.set('')
+        time_return.set('')
+        origin.set('')
+        destination.set('')
+        class_airport.set('')
+        seat_chr.set('')
+        seat_num.set('')
+
     def check():
         '''ตรวจสอบข้อมูล และราคา'''
         # get data from inputs
@@ -182,6 +197,21 @@ def booking():
         time_start = combo_time_start.get()
         time_return = combo_time_return.get()
         class_seat = combo_class.get()
+        data = { #put data into dict to use with spreadsheet.py
+            "name_start": name_start,
+            "name": name,
+            "age": age,
+            "tel": tel,
+            "email": email,
+            "start": origin,
+            "start_time": time_start,
+            "start_date": d_departure,
+            "dest": destination,
+            "dest_time": time_return,
+            "dest_date": d_return,
+            "class_airport": class_seat,
+            "seat": seat
+        }
 
         check_data = Tk()
         check_data.title('Check Information')
@@ -189,6 +219,8 @@ def booking():
         def create_ticket():
             '''สร้างตั๋ว'''
             check_data.destroy()
+            # save data
+            spreadsheet.write(data)
             # draw images
             draw=ImageDraw.Draw(image_image_4)
             draw.text((703.0-673, 283.0-106), text="JKF", fill="#000000", font=ImageFont.truetype("Manrope-ExtraBold.ttf", 64))
@@ -287,7 +319,7 @@ def booking():
     button_save.place(x=948.0, y=617.0, width=124.0, height=46.0)
 
     button_image_2 = PhotoImage(file=relative_to_assets("button_2.png"))
-    button_clear = Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: print("button_2 clicked"), relief="flat")
+    button_clear = Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=clearinput, relief="flat")
     button_clear.place(x=363.0, y=617.0, width=124.0, height=46.0)
 
     button_image_3 = PhotoImage(file=relative_to_assets("button_3.png"))

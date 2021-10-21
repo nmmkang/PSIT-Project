@@ -16,61 +16,73 @@ current_data = [
     for col in range(1, 13)
 ]
 
-def check(data):
-    """check for user input errors and duplicates"""
-    #USER INPUT ERROR CHECKS
-    #ตรวจสอบแต่ละช่อง input ว่าเขียนผิดแบบหรือไม่
-    #ทุกช่องตรวจด้วยว่าใส่มาครบไหม
-    #Name: เลือกคำนำหน้าหรือยัง
-    error_blank_name = not bool(data['name']) or data['name'].isspace()
-    error_name_start = data['name_start'] == ''
-    #Age: เป็นตัวเลข
-    error_blank_age = not bool(data['age']) or data['age'].isspace()
-    error_age = not data['age'].isnumeric()
-    #Tel: เป็นตัวเลข
-    error_blank_tel = not bool(data['tel']) or data['tel'].isspace()
-    error_tel = not data['tel'].isnumeric()
-    #Email: มี @ .
-    error_blank_email = not bool(data['email']) or data['email'].isspace()
-    error_email_format = data['email'].count('@') != 1 or data['email'].count('.') < 1
-    #วันที: เขียนตามแบบ (นอกจากจะเปลี่ยนเป็น gui เลือกวันที่ให้เลย)
-    error_blank_start_date = not bool(data['start_date'])
-    error_blank_dest_date = not bool(data['dest_date'])
-    error_start_date_format = data['start_date'][2:6:3] != '--'
-    error_dest_date_format = data['dest_date'][2:6:3] != '--'
-    #combobox ทุกอัน: เลือกให้ครบ
-    #start, start_time, dest_dest_time, class_airport, seat
-    error_blank_start = not bool(data['start'])
-    error_blank_start_time = not bool(data['start_time'])
-    error_blank_dest = not bool(data['dest'])
-    error_blank_dest_time = not bool(data['dest_time'])
-    error_blank_class = not bool(data['class_airport'])
-    error_blank_seat = not bool(data['seat'])
+def write(data):
+    """Write data to spreadsheet."""
+    ws.append(list(data.values()))
+    wb.save("data.xlsx")
 
-    #DUPLICATE CHECKS ==> -1
-    #0:name_start, 1:name,           2:age,        3:tel,  4:email,
-    #5:start,      6:start_time,     7:start_date, 8:dest, 9:dest_time,
-    #10:dest_date, 11:class_airport, 12:seat
-    dupl_name = data['name'] in current_data[1]
-    dupl_tel = data['tel'] in current_data[3]
-    dupl_email = data['email'] in current_data[4]
+def error_inputs(var):
+    """Check most entries/comboboxes/radiobuttons if it blanks."""
+    return var == '' or var.isspace()
+
+def error_numeric(num):
+    """Check entry if it's blank/not a number."""
+    if num == '':
+        return 'blank'
+    elif not num.isnumeric():
+        return 'num'
+    return False
+
+def error_email(email):
+    """Check email if it's blank/wrong format."""
+    if email == '':
+        return 'blank'
+    elif email.count('@') != 1 or email.count('.') < 1:
+        return 'format'
+    return False
+
+def error_date(date):
+    """Check dates if blank/wrong format."""
+    if date == '':
+        return 'blank'
+    elif date[2:6:3] != '--':
+        return 'format'
+    else:
+        if not 12 >= int(date[3:5]) >= 1:
+            return 'month'
+        if int(date[:2]) < 1:
+            return 'day'
+        elif int(date[3:5]) in [1, 3, 5, 7, 8, 10, 12] and int(date[:2]) > 31:
+            return 'day'
+        elif int(date[3:5]) in [4, 6, 9, 11] and int(date[:2]) > 31:
+            return 'day'
+        return False
+
+def dupl_name(name):
+    """Check for name duplicates."""
+    return name in current_data[1]
+
+def dupl_tel(tel):
+    """Check for tel duplicates."""
+    return tel in current_data[3]
+
+def dupl_email(email):
+    """Check for email duplicates."""
+    return email in current_data[4]
+
+#0:name_start, 1:name,           2:age,        3:tel,  4:email,
+#5:start,      6:start_time,     7:start_date, 8:dest, 9:dest_time,
+#10:dest_date, 11:class_airport, 12:seat
+
+def dupl_seat(seat, date, check):
+    if check == 'start':
+        col = 7
+    elif check == 'end':
+        col = 10
     used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
         current_data[12][i]
         for i in range(len(current_data[12]))
-        if current_data[5][i] == data['start_date']
+        if current_data[col][i] == date
     ]
-    dupl_seat = data['seat'] in used_seats_start
+    return seat in used_seats_start
 
-    errors = [error_blank_name, error_name_start, error_blank_age, error_age,
-            error_blank_tel, error_tel, error_blank_email, error_email_format,
-            error_blank_start_date, error_blank_dest_date, error_start_date_format,
-            error_dest_date_format, error_blank_start, error_blank_start_time,
-            error_blank_dest, error_blank_dest_time, error_blank_class, error_blank_seat,
-            dupl_name, dupl_tel, dupl_email, dupl_seat]
-
-    return sum(errors) > 0 #ถ้ามีอันนึงที่ error จะ return True
-
-def write(data):
-    """write data to spreadsheet"""
-    ws.append(list(data.values()))
-    wb.save("data.xlsx")

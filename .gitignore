@@ -1,2 +1,6 @@
 
 *.pyc
+/__pycache__/*
+data.xlsx
+~$data.xlsx
+img3.png

@@ -4,8 +4,11 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Border, Side, PatternFill
 from os.path import isfile
 
+#path of database file
+data_path = 'data' + '.xlsx'
+
 #if data file does not exist, create a new one.
-if not isfile('./data.xlsx'):
+if not isfile('./' + data_path):
     wb = Workbook()
     ws = wb.active
     ws.title = 'Passengers'
@@ -57,10 +60,10 @@ if not isfile('./data.xlsx'):
     ws.column_dimensions['L'].width = 100/6
     ws.column_dimensions['M'].width = 64/6
 
-    wb.save('data.xlsx')
+    wb.save(data_path)
 
 #load workbook
-wb = load_workbook('data.xlsx')
+wb = load_workbook(data_path)
 ws = wb.active
 
 #อ่านข้อมูลใน sheet มาเก็บไว้ใน list เพื่อใช้เปรีบยเทียบดูข้อมูลซ้ำ
@@ -70,13 +73,17 @@ ws = wb.active
 #11:dest_date, 12:class_airport, 13:seat
 current_data = [
     list(list(ws.iter_cols(min_row=2, min_col=col, max_col=col, values_only=True))[0])
-    for col in range(1, 13)
+    for col in range(1, 14)
 ]
+
+#print all datas, probably use for debug
+#for col in current_data:
+#    print(col)
 
 def write(data):
     """Write data to spreadsheet."""
     ws.append(list(data.values()))
-    wb.save("data.xlsx")
+    wb.save(data_path)
 
 #* USER INPUT ERROR
 #? Check if: - input field is blank
@@ -133,10 +140,11 @@ def error_date(date):
 #* DUPLICATE CHECKING
 #? Check if any input is duplicated with one recorded in the database.
 
-def check_duplicate(name, tel, email, origin, time_start, date_departure,
-                    destination, time_return, date_return, seat):
+def check_duplicate(name, tel, email, date_departure, date_return, seat):
     """Check if any input is duplicated with database."""
-    return sum([dupl_name(name), dupl_tel(tel), dupl_email(email)]) != 0
+    return sum([dupl_name(name), dupl_tel(tel), dupl_email(email),
+                dupl_seat(seat, date_departure, 'start'),
+                dupl_seat(seat, date_return, 'end')]) != 0
 
 #0:name_start, 1:name,           2:age,        3:tel,  4:email,
 #5:start,      6:start_time,     7:start_date, 8:dest, 9:dest_time,

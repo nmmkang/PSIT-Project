@@ -1,5 +1,7 @@
 """print ตั๋ว"""
 
+print('[CONSOLE] Program starting...')
+
 import spreadsheet as sh #spreadsheet.py
 from pathlib import Path
 from tkinter import *
@@ -178,8 +180,7 @@ def booking():
     def check():
         '''ตรวจสอบข้อมูล และราคา'''
 
-        check_data = Tk()
-        check_data.title('Check Information')
+        print('[CONSOLE] Datas checking...')
 
         # get data from inputs
         name_start = radio_name_start.get()
@@ -196,6 +197,26 @@ def booking():
         time_start = combo_time_start.get()
         time_return = combo_time_return.get()
         class_seat = combo_class.get()
+
+        try:
+            date_departure2 = date_departure.split('-')
+            d_departure = "%02d.%02d.%s" %(int(date_departure2[0]), int(date_departure2[1]), date_departure2[2][2:])
+        except:
+            print('[CONSOLE] ERROR: Departure date cannot be made.')
+            d_departure = ''
+
+        try:
+            date_return2 = date_return.split('-')
+            d_return = "%02d.%02d.%s" %(int(date_return2[0]), int(date_return2[1]), date_return2[2][2:])
+        except:
+            print('[CONSOLE] ERROR: Return date cannot be made.')
+            d_return = ''
+
+        try:
+            seat = "%s%02d" %(seat_chr, int(seat_num))
+        except:
+            print('[CONSOLE] ERROR: Seat cannot be made.')
+            seat = ''
 
         #หน้าต่าง error
         def error_warning():
@@ -227,7 +248,7 @@ def booking():
                 Label(error_window, text='- Please select your origin.').pack()
             if sh.error_blank(time_start):
                 Label(error_window, text='- Please select your origin time.').pack()
-            if sh.error_date(date_departure):
+            if sh.error_date(date_departure): #ถ้าทำที่เลือกวันที่เสร็จก็ลบทิ้งเลย
                 if sh.error_date(date_departure) == 'blank':
                     Label(error_window, text='- Please select your origin date.').pack()
                 elif sh.error_date(date_departure) == 'format':
@@ -240,7 +261,7 @@ def booking():
                 Label(error_window, text='- Please select your destination.').pack()
             if sh.error_blank(time_return):
                 Label(error_window, text='- Please select your destination time.').pack()
-            if sh.error_date(date_return):
+            if sh.error_date(date_return): #ถ้าทำที่เลือกวันที่เสร็จก็ลบทิ้งเลย
                 if sh.error_date(date_return) == 'blank':
                     Label(error_window, text='- Please select your destination date.').pack()
                 elif sh.error_date(date_return) == 'format':
@@ -259,110 +280,121 @@ def booking():
                 Label(error_window, text='- This phone number has been used.').pack()
             if sh.dupl_email(email):
                 Label(error_window, text='- This email has been used.').pack()
+            if sh.dupl_seat(seat, d_departure, 'start'):
+                Label(error_window, text='- The seat you picked for your departure flight is not available.').pack()
+            if sh.dupl_seat(seat, d_return, 'end'):
+                Label(error_window, text='- The seat you picked for your return flight is not available.').pack()
 
             Button(error_window, text='OK', command=error_window.destroy).pack()
 
-        if sh.check_error(name_start, name, age, tel, email, origin, time_start,
-                date_departure, destination, time_return, date_return,
-                class_seat, seat_chr, seat_num):
+        def check_window():
+            def create_ticket():
+                '''สร้างตั๋ว'''
+                check_data.destroy()
+                # save data
+                data = { #put data into dict to use with sh
+                    "name_start": name_start,
+                    "name": name,
+                    "age": age,
+                    "tel": tel,
+                    "email": email,
+                    "start": origin,
+                    "start_time": time_start,
+                    "start_date": d_departure,
+                    "dest": destination,
+                    "dest_time": time_return,
+                    "dest_date": d_return,
+                    "class_airport": class_seat,
+                    "seat": seat
+                }
+
+                sh.write(data)
+                print('[CONSOLE] Data wrote to database.')
+
+                # draw images
+                draw=ImageDraw.Draw(image_image_4)
+                draw.text((703.0-673, 283.0-106), text="JKF", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 64))
+                draw.text((920.0-673, 283.0-106), text="ROM", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 64 ))
+                draw.text((715.0-673, 381.0-106), text="DATE", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((801.0-673, 380.0-106), text="%s         %s" %(d_departure, d_return), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
+                draw.text((801.0-673, 380.0-106), text="                       |", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
+                draw.text((801.0-673, 423.0-106), text="%s       %s" %(time_start, time_return), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24)) # time
+                draw.text((801.0-673, 423.0-106), text="                       |", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
+                draw.text((716.0-673, 426.0-106), text="TIME", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((715.0-673, 191.0-106), text="PASSENGER NAME", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
+                draw.text((715.0-673, 210.0-106), text=name_start + " " + name.upper(), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # passenger name
+                draw.text((715.0-673, 237.0-106), text="FROM", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
+                draw.text((716.0-673, 256.0-106), text=origin,fill="#0284B9",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # origin
+                draw.text((898.0-673, 237.0-106), text="TO",fill="#000000",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
+                draw.text((898.0-673, 256.0-106), text=destination,fill="#0284B9",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # destination
+                draw.text((727.0-673, 511.0-106), text="JR1103",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((857.0-673, 511.0-106), text="R3",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((955.0-673, 511.0-106), text=seat,fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24)) # seat 1
+                draw.text((727.0-673, 541.0-106), text="RJ1503",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((857.0-673, 541.0-106), text="J3",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                draw.text((955.0-673, 541.0-106), text=seat,fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24)) # seat 2
+                draw.text((740.0-673, 483.0-106), text="FLIGHT",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
+                draw.text((853.0-673, 483.0-106), text="GATE",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
+                draw.text((958.0-673, 483.0-106), text="SEAT",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
+                draw.text((806.0-673, 124.0-106), text="PSIT Airline",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
+                #image_image_4.show()
+                photo = ImageTk.PhotoImage(image_image_4)
+                canvas.create_image(872.0,351.0,image=photo)
+                canvas.create_image(x=670,y=100,image=photo)
+                print('[CONSOLE] Image processed.')
+
+            check_data = Tk()
+            check_data.title('Check Information')
+
+            #เฟรมตรวจสอบข้อมูลที่กรอกมา
+            labelframe = LabelFrame(check_data, text='Please check your information')
+            labelprice = LabelFrame(check_data, text='Please check your flight')
+
+            Label(labelframe, text='   Name').grid(row=1, column=0, pady=3, sticky=W)
+            Label(labelframe, text=name_start+' '+name.upper()).grid(row=1, column=1, columnspan=2, pady=3, sticky=W)
+
+            Label(labelframe, text='   Age').grid(row=2, column=0, pady=3, sticky=W)
+            Label(labelframe, text=age+' years').grid(row=2, column=1, pady=3, sticky=W)
+
+            Label(labelframe, text='   Tel').grid(row=3, column=0, pady=3, sticky=W)
+            Label(labelframe, text=tel).grid(row=3, column=1, pady=3, sticky=W)
+
+            Label(labelframe, text='   Email').grid(row=4, column=0, pady=3, sticky=W)
+            Label(labelframe, text=email).grid(row=4, column=1, pady=3, sticky=W)
+
+            Label(labelprice, text='   From').grid(row=0, column=0, pady=3, sticky=W)
+            Label(labelprice, text=origin+' | '+time_start+' | '+d_departure).grid(row=0, column=1, pady=3, sticky=W)
+            Label(labelprice, text='   To').grid(row=1, column=0, pady=3, sticky=W)
+            Label(labelprice, text=destination+' | '+time_return+' | '+d_return).grid(row=1, column=1, pady=3,sticky=W)
+
+            Label(labelprice, text='   Class').grid(row=2, column=0, pady=3, sticky=W)
+            Label(labelprice, text=class_seat).grid(row=2, column=1, pady=3, sticky=W)
+
+            Label(labelprice, text='   Seat').grid(row=3, column=0, pady=3, sticky=W)
+            Label(labelprice, text=seat).grid(row=3, column=1, pady=3, sticky=W)
+
+            labelframe.grid(row=0, column=0, padx=10, pady=5, ipadx=5, ipady=5)
+            labelprice.grid(row=0, column=1, padx=10, pady=5, ipadx=5, ipady=5)
+
+            Label(check_data, text='THB 1,250', font=("fonts/Manrope Blod", 46)).grid(sticky='news',row=1, column=0 , columnspan=2)
+            label_button = Label(check_data)
+            Button(label_button, text='Confirm', command=create_ticket).grid(row=0, column=1, pady=5)
+            Button(label_button, text='Cancel', command=check_data.destroy).grid(row=0, column=0, pady=5)
+            label_button.grid(row=2, column=0 , columnspan=2)
+
+            check_data.resizable(False, False)
+            check_data.mainloop()
+
+        any_error = sh.check_error(name_start, name, age, tel, email, origin, time_start,
+        date_departure, destination, time_return, date_return,
+        class_seat, seat_chr, seat_num)
+        any_duplicate = sh.check_duplicate(name, tel, email, date_departure, date_return, seat)
+
+        if any_error or any_duplicate:
             error_warning()
-            check_data.destroy()
-
-        date_departure2 = date_departure.split('-')
-        date_return2 = date_return.split('-')
-        d_departure = "%02d.%02d.%s" %(int(date_departure2[0]), int(date_departure2[1]), date_departure2[2][2:])
-        d_return = "%02d.%02d.%s" %(int(date_return2[0]), int(date_return2[1]), date_return2[2][2:])
-        seat = "%s%02d" %(seat_chr, int(seat_num))
-
-        def create_ticket():
-            '''สร้างตั๋ว'''
-            check_data.destroy()
-            # save data
-            data = { #put data into dict to use with sh
-                "name_start": name_start,
-                "name": name,
-                "age": age,
-                "tel": tel,
-                "email": email,
-                "start": origin,
-                "start_time": time_start,
-                "start_date": d_departure,
-                "dest": destination,
-                "dest_time": time_return,
-                "dest_date": d_return,
-                "class_airport": class_seat,
-                "seat": seat
-            }
-            sh.write(data)
-            # draw images
-            draw=ImageDraw.Draw(image_image_4)
-            draw.text((703.0-673, 283.0-106), text="JKF", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 64))
-            draw.text((920.0-673, 283.0-106), text="ROM", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 64 ))
-            draw.text((715.0-673, 381.0-106), text="DATE", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((801.0-673, 380.0-106), text="%s         %s" %(d_departure, d_return), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
-            draw.text((801.0-673, 380.0-106), text="                       |", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
-            draw.text((801.0-673, 423.0-106), text="%s       %s" %(time_start, time_return), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24)) # time
-            draw.text((801.0-673, 423.0-106), text="                       |", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Medium.ttf", 24))
-            draw.text((716.0-673, 426.0-106), text="TIME", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((715.0-673, 191.0-106), text="PASSENGER NAME", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
-            draw.text((715.0-673, 210.0-106), text=name_start + " " + name.upper(), fill="#0284B9", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # passenger name
-            draw.text((715.0-673, 237.0-106), text="FROM", fill="#000000", font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
-            draw.text((716.0-673, 256.0-106), text=origin,fill="#0284B9",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # origin
-            draw.text((898.0-673, 237.0-106), text="TO",fill="#000000",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 10))
-            draw.text((898.0-673, 256.0-106), text=destination,fill="#0284B9",font=ImageFont.truetype("fonts/Manrope-Regular.ttf", 16)) # destination
-            draw.text((727.0-673, 511.0-106), text="JR1103",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((857.0-673, 511.0-106), text="R3",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((955.0-673, 511.0-106), text=seat,fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24)) # seat 1
-            draw.text((727.0-673, 541.0-106), text="RJ1503",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((857.0-673, 541.0-106), text="J3",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            draw.text((955.0-673, 541.0-106), text=seat,fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24)) # seat 2
-            draw.text((740.0-673, 483.0-106), text="FLIGHT",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
-            draw.text((853.0-673, 483.0-106), text="GATE",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
-            draw.text((958.0-673, 483.0-106), text="SEAT",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 16))
-            draw.text((806.0-673, 124.0-106), text="PSIT Airline",fill="#FFFFFF",font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 24))
-            #image_image_4.show()
-            photo = ImageTk.PhotoImage(image_image_4)
-            canvas.create_image(872.0,351.0,image=photo)
-            canvas.create_image(x=670,y=100,image=photo)
-
-        #เฟรมตรวจสอบข้อมูลที่กรอกมา
-        labelframe = LabelFrame(check_data, text='Please check your information')
-        labelprice = LabelFrame(check_data, text='Please check your flight')
-
-        Label(labelframe, text='   Name').grid(row=1, column=0, pady=3, sticky=W)
-        Label(labelframe, text=name_start+' '+name.upper()).grid(row=1, column=1, columnspan=2, pady=3, sticky=W)
-
-        Label(labelframe, text='   Age').grid(row=2, column=0, pady=3, sticky=W)
-        Label(labelframe, text=age+' years').grid(row=2, column=1, pady=3, sticky=W)
-
-        Label(labelframe, text='   Tel').grid(row=3, column=0, pady=3, sticky=W)
-        Label(labelframe, text=tel).grid(row=3, column=1, pady=3, sticky=W)
-
-        Label(labelframe, text='   Email').grid(row=4, column=0, pady=3, sticky=W)
-        Label(labelframe, text=email).grid(row=4, column=1, pady=3, sticky=W)
-
-        Label(labelprice, text='   From').grid(row=0, column=0, pady=3, sticky=W)
-        Label(labelprice, text=origin+' | '+time_start+' | '+d_departure).grid(row=0, column=1, pady=3, sticky=W)
-        Label(labelprice, text='   To').grid(row=1, column=0, pady=3, sticky=W)
-        Label(labelprice, text=destination+' | '+time_return+' | '+d_return).grid(row=1, column=1, pady=3,sticky=W)
-
-        Label(labelprice, text='   Class').grid(row=2, column=0, pady=3, sticky=W)
-        Label(labelprice, text=class_seat).grid(row=2, column=1, pady=3, sticky=W)
-
-        Label(labelprice, text='   Seat').grid(row=3, column=0, pady=3, sticky=W)
-        Label(labelprice, text=seat).grid(row=3, column=1, pady=3, sticky=W)
-
-        labelframe.grid(row=0, column=0, padx=10, pady=5, ipadx=5, ipady=5)
-        labelprice.grid(row=0, column=1, padx=10, pady=5, ipadx=5, ipady=5)
-
-        Label(check_data, text='THB 1,250', font=("fonts/Manrope Blod", 46)).grid(sticky='news',row=1, column=0 , columnspan=2)
-        label_button = Label(check_data)
-        Button(label_button, text='Confirm', command=lambda: create_ticket()).grid(row=0, column=1, pady=5)
-        Button(label_button, text='Cancel', command=lambda: check_data.destroy()).grid(row=0, column=0, pady=5)
-        label_button.grid(row=2, column=0 , columnspan=2)
-
-        check_data.resizable(False, False)
-        check_data.mainloop()
+        else:
+            check_window()
+        print('[CONSOLE] Datas checked.')
 
 
     #change destination
@@ -372,7 +404,6 @@ def booking():
         list_airport2.remove(combo_origin.get())
         destination.config(values=list_airport2)
     combo_origin.trace_add("write", change_dest)
-
 
     #change seat_char by class
     #list_class = ['First Class', 'Business Class', 'Economy Class']
@@ -402,4 +433,5 @@ def booking():
     window.resizable(False, False)
     window.mainloop()
 
+print('[CONSOLE] Program started.')
 booking()

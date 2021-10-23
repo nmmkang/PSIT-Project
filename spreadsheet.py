@@ -77,8 +77,8 @@ current_data = [
 ]
 
 #print all datas, probably use for debug
-#for col in current_data:
-#    print(col)
+for col in current_data:
+    print(col)
 
 def write(data):
     """Write data to spreadsheet."""
@@ -140,11 +140,12 @@ def error_date(date):
 #* DUPLICATE CHECKING
 #? Check if any input is duplicated with one recorded in the database.
 
-def check_duplicate(name, tel, email, date_departure, date_return, seat):
+def check_duplicate(name, tel, email, origin, date_departure, time_start, destination,
+                    date_return, time_return, seat):
     """Check if any input is duplicated with database."""
     return sum([dupl_name(name), dupl_tel(tel), dupl_email(email),
-                dupl_seat(seat, date_departure, 'start'),
-                dupl_seat(seat, date_return, 'end')]) != 0
+                dupl_seat(seat, origin, date_departure, time_start, 'start'),
+                dupl_seat(seat, destination, date_return, time_return, 'end')]) != 0
 
 #0:name_start, 1:name,           2:age,        3:tel,  4:email,
 #5:start,      6:start_time,     7:start_date, 8:dest, 9:dest_time,
@@ -162,15 +163,27 @@ def dupl_email(email):
     """Check for email duplicates."""
     return email in current_data[4]
 
-def dupl_seat(seat, date, check):
+def dupl_seat(seat, place, date, time, check):
+    #print(current_data[12])
     if check == 'start':
-        col = 7
+        #print(current_data[7])
+        used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
+            current_data[12][i]
+            for i in range(len(current_data[12]))
+            if current_data[5][i] == place and
+            current_data[6][i] == time and
+            current_data[7][i] == date
+        ]
     elif check == 'end':
-        col = 10
-    used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
-        current_data[12][i]
-        for i in range(len(current_data[12]))
-        if current_data[col][i] == date
-    ]
+        #print(current_data[10])
+        used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
+            current_data[12][i]
+            for i in range(len(current_data[12]))
+            if current_data[8][i] == place and
+            current_data[9][i] == time and
+            current_data[10][i] == date
+        ]
+    print('[CONSOLE] Seats used, %s, %s, %s, %s:' %(check, date, place, time))
+    print(used_seats_start)
     return seat in used_seats_start
 

@@ -280,9 +280,9 @@ def booking():
                 Label(error_window, text='- This phone number has been used.').pack()
             if sh.dupl_email(email):
                 Label(error_window, text='- This email has been used.').pack()
-            if sh.dupl_seat(seat, d_departure, 'start'):
+            if sh.dupl_seat(seat, origin, d_departure, time_start, 'start'):
                 Label(error_window, text='- The seat you picked for your departure flight is not available.').pack()
-            if sh.dupl_seat(seat, d_return, 'end'):
+            if sh.dupl_seat(seat, destination, d_return, time_return, 'end'):
                 Label(error_window, text='- The seat you picked for your return flight is not available.').pack()
 
             Button(error_window, text='OK', command=error_window.destroy).pack()
@@ -388,7 +388,8 @@ def booking():
         any_error = sh.check_error(name_start, name, age, tel, email, origin, time_start,
         date_departure, destination, time_return, date_return,
         class_seat, seat_chr, seat_num)
-        any_duplicate = sh.check_duplicate(name, tel, email, date_departure, date_return, seat)
+        any_duplicate = sh.check_duplicate(name, tel, email, origin, d_departure, time_start,
+        destination, d_return, time_return, seat)
 
         if any_error or any_duplicate:
             error_warning()

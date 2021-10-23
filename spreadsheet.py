@@ -166,23 +166,16 @@ def dupl_email(email):
 def dupl_seat(seat, place, date, time, check):
     #print(current_data[12])
     if check == 'start':
-        #print(current_data[7])
-        used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
-            current_data[12][i]
-            for i in range(len(current_data[12]))
-            if current_data[5][i] == place and
-            current_data[6][i] == time and
-            current_data[7][i] == date
-        ]
+        col = 5
     elif check == 'end':
-        #print(current_data[10])
-        used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
-            current_data[12][i]
-            for i in range(len(current_data[12]))
-            if current_data[8][i] == place and
-            current_data[9][i] == time and
-            current_data[10][i] == date
-        ]
+        col = 8
+    used_seats_start = [ #if start_date in sheet == one in data, add seat into this list
+        current_data[12][i]
+        for i in range(len(current_data[12]))
+        if current_data[col][i] == place and
+        current_data[col+1][i] == time and
+        current_data[col+2][i] == date
+    ]
     print('[CONSOLE] Seats used, %s, %s, %s, %s:' %(check, date, place, time))
     print(used_seats_start)
     return seat in used_seats_start

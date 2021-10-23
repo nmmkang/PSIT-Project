@@ -1,6 +1,6 @@
 """print ตั๋ว"""
 
-import spreadsheet #file ดึงข้อมูลมาจาก excel อย่าเพิ่ง import ยังเขียนไม่เสร็จ
+import spreadsheet as sh #spreadsheet.py
 from pathlib import Path
 from tkinter import *
 # Explicit imports to satisfy Flake8
@@ -177,6 +177,10 @@ def booking():
 
     def check():
         '''ตรวจสอบข้อมูล และราคา'''
+
+        check_data = Tk()
+        check_data.title('Check Information')
+
         # get data from inputs
         name_start = radio_name_start.get()
         name = entry_name.get()
@@ -184,43 +188,112 @@ def booking():
         email = entry_email.get()
         age = entry_age.get()
         date_departure = entry_date_departure.get()
-        date_departure = date_departure.split('-')
-        d_departure = "%02d.%02d.%s" %(int(date_departure[0]), int(date_departure[1]), date_departure[2][2:])
         date_return = entry_date_return.get()
-        date_return = date_return.split('-')
-        d_return = "%02d.%02d.%s" %(int(date_return[0]), int(date_return[1]), date_return[2][2:])
         origin = combo_origin.get()
         destination = combo_destination.get()
         seat_chr = combo_seat_chr.get()
         seat_num = combo_seat_num.get()
-        seat = "%s%02d" %(seat_chr, int(seat_num))
         time_start = combo_time_start.get()
         time_return = combo_time_return.get()
         class_seat = combo_class.get()
-        data = { #put data into dict to use with spreadsheet.py
-            "name_start": name_start,
-            "name": name,
-            "age": age,
-            "tel": tel,
-            "email": email,
-            "start": origin,
-            "start_time": time_start,
-            "start_date": d_departure,
-            "dest": destination,
-            "dest_time": time_return,
-            "dest_date": d_return,
-            "class_airport": class_seat,
-            "seat": seat
-        }
 
-        check_data = Tk()
-        check_data.title('Check Information')
+        #หน้าต่าง error
+        def error_warning():
+            """error window"""
+            error_window = Tk()
+            error_window.title('Error')
+
+            #แต่ละ condition ที่จะพิมพ์คำออกมา
+            if sh.error_blank(name_start):
+                Label(error_window, text='- Please enter your name prefix.').pack()
+            if sh.error_blank(name):
+                Label(error_window, text='- Please enter your name.').pack()
+            if sh.error_numeric(age):
+                if sh.error_numeric(age) == 'blank':
+                    Label(error_window, text='- Please enter your age.').pack()
+                elif sh.error_numeric(age) == 'num':
+                    Label(error_window, text='- Age must be a number.').pack()
+            if sh.error_numeric(tel):
+                if sh.error_numeric(tel) == 'blank':
+                    Label(error_window, text='- Please enter your phone number.').pack()
+                elif sh.error_numeric(tel) == 'num':
+                    Label(error_window, text='- Phone number must be a number.').pack()
+            if sh.error_email(email):
+                if sh.error_email(email) == 'blank':
+                    Label(error_window, text='- Please enter your email.').pack()
+                elif sh.error_email(email) == 'format':
+                    Label(error_window, text='- Email must be written in a right format.').pack()
+            if sh.error_blank(origin):
+                Label(error_window, text='- Please select your origin.').pack()
+            if sh.error_blank(time_start):
+                Label(error_window, text='- Please select your origin time.').pack()
+            if sh.error_date(date_departure):
+                if sh.error_date(date_departure) == 'blank':
+                    Label(error_window, text='- Please select your origin date.').pack()
+                elif sh.error_date(date_departure) == 'format':
+                    Label(error_window, text='- Origin date must be written in a right format.').pack()
+                elif sh.error_date(date_departure) == 'day':
+                    Label(error_window, text='- Day in origin date is invalid.').pack()
+                elif sh.error_date(date_departure) == 'month':
+                    Label(error_window, text='- Month in origin date is invalid.').pack()
+            if sh.error_blank(destination):
+                Label(error_window, text='- Please select your destination.').pack()
+            if sh.error_blank(time_return):
+                Label(error_window, text='- Please select your destination time.').pack()
+            if sh.error_date(date_return):
+                if sh.error_date(date_return) == 'blank':
+                    Label(error_window, text='- Please select your destination date.').pack()
+                elif sh.error_date(date_return) == 'format':
+                    Label(error_window, text='- Destination date must be written in a right format.').pack()
+                elif sh.error_date(date_return) == 'day':
+                    Label(error_window, text='- Day in destination date is invalid.').pack()
+                elif sh.error_date(date_return) == 'month':
+                    Label(error_window, text='- Month in destination date is invalid.').pack()
+            if sh.error_blank(class_seat):
+                Label(error_window, text='- Please select your class.').pack()
+            if sh.error_blank(seat_chr) or sh.error_blank(seat_num):
+                Label(error_window, text='- Your seat number is invalid.').pack()
+            if sh.dupl_name(name):
+                Label(error_window, text='- This name has been used.').pack()
+            if sh.dupl_tel(tel):
+                Label(error_window, text='- This phone number has been used.').pack()
+            if sh.dupl_email(email):
+                Label(error_window, text='- This email has been used.').pack()
+
+            Button(error_window, text='OK', command=error_window.destroy).pack()
+
+        if sh.check_error(name_start, name, age, tel, email, origin, time_start,
+                date_departure, destination, time_return, date_return,
+                class_seat, seat_chr, seat_num):
+            error_warning()
+            check_data.destroy()
+
+        date_departure2 = date_departure.split('-')
+        date_return2 = date_return.split('-')
+        d_departure = "%02d.%02d.%s" %(int(date_departure2[0]), int(date_departure2[1]), date_departure2[2][2:])
+        d_return = "%02d.%02d.%s" %(int(date_return2[0]), int(date_return2[1]), date_return2[2][2:])
+        seat = "%s%02d" %(seat_chr, int(seat_num))
 
         def create_ticket():
             '''สร้างตั๋ว'''
             check_data.destroy()
             # save data
-            spreadsheet.write(data)
+            data = { #put data into dict to use with sh
+                "name_start": name_start,
+                "name": name,
+                "age": age,
+                "tel": tel,
+                "email": email,
+                "start": origin,
+                "start_time": time_start,
+                "start_date": d_departure,
+                "dest": destination,
+                "dest_time": time_return,
+                "dest_date": d_return,
+                "class_airport": class_seat,
+                "seat": seat
+            }
+            sh.write(data)
             # draw images
             draw=ImageDraw.Draw(image_image_4)
             draw.text((703.0-673, 283.0-106), text="JKF", fill="#000000", font=ImageFont.truetype("fonts/Manrope-ExtraBold.ttf", 64))

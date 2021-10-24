@@ -3,6 +3,7 @@
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Border, Side, PatternFill
 from os.path import isfile
+from datetime import datetime
 
 #path of database file
 data_path = 'data' + '.xlsx'
@@ -14,18 +15,19 @@ if not isfile('./' + data_path):
     ws.title = 'Passengers'
 
     ws.append(['Name', 'Name', 'Age', 'Tel', 'Email', 'Start', 'Time', 'Date',
-            'Destination', 'Time', 'Date', 'Class', 'Seat'])
+            'Destination', 'Time', 'Date', 'Class', 'Seat', 'Timestamp'])
 
     black = '00000000'
     thin = Side(border_style='thin', color=black)
 
-    for i in range(1, 14):
+    for i in range(1, 15):
         ws.cell(row=1, column=i).font = Font(bold=True)
         ws.cell(row=1, column=i).border = Border(top=thin, left=thin, right=thin, bottom=thin)
 
     green1 = '00C6E0B4'
     green2 = '00E2EFDA'
     blue = '00B4C6E7'
+    blue2 = '0092CDDC'
     red1 = '00F4B084'
     red2 = '00F8CBAD'
     yellow1 = '00FFD966'
@@ -45,6 +47,7 @@ if not isfile('./' + data_path):
     ws['K1'].fill = PatternFill(patternType='solid', fgColor=yellow2)
     ws['L1'].fill = PatternFill(patternType='solid', fgColor=lime)
     ws['M1'].fill = PatternFill(patternType='solid', fgColor=lime)
+    ws['N1'].fill = PatternFill(patternType='solid', fgColor=blue2)
 
     ws.column_dimensions['A'].width = 64/6
     ws.column_dimensions['B'].width = 216/6
@@ -59,6 +62,7 @@ if not isfile('./' + data_path):
     ws.column_dimensions['K'].width = 85/6
     ws.column_dimensions['L'].width = 100/6
     ws.column_dimensions['M'].width = 64/6
+    ws.column_dimensions['N'].width = 144/6
 
     wb.save(data_path)
 
@@ -80,8 +84,13 @@ current_data = [
 for col in current_data:
     print(col)
 
+def timestamp():
+    """Get current time. %Y/%m/%d %H:%M:%S"""
+    return datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+
 def write(data):
     """Write data to spreadsheet."""
+    data['timestamp'] = timestamp()
     ws.append(list(data.values()))
     wb.save(data_path)
 
